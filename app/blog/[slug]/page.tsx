@@ -1,7 +1,10 @@
+"use server";
+
 import { notFound } from "next/navigation";
 import { CustomMDX } from "app/components/mdx";
 import { formatDate, getBlogPosts } from "app/blog/utils";
 import { baseUrl } from "app/sitemap";
+import { sql } from "@vercel/postgres";
 
 async function generateStaticParams() {
   let posts = getBlogPosts();
@@ -50,12 +53,31 @@ function generateMetadata({ params }) {
     },
   };
 }
+
+async function incrementalView(slug: string) {
+  await sql`
+  INSERT INTO views (slug, count)
+  VALUES (${slug}, 1)
+  ON CONFLICT (slug)
+  DO UPDATE SET count = views.count + 1;
+  `;
+}
 async function getViewsCount(): Promise<{ slug: string; count: number }[]> {
-  return [{ slug: "vim", count: 100 }];
+  const { rows } = await sql`
+  SELECT slug, count
+  FROM views;  
+  `;
+
+  return rows.map((r) => ({
+    slug: r.slug,
+    count: r.count,
+  }));
 }
 
 export default async function Blog({ params }) {
   let post = getBlogPosts().find((post) => post.slug === params.slug);
+  post && (await incrementalView(post.slug));
+
   const views = await getViewsCount();
   const count = views.find((v) => v.slug === post?.slug)?.count;
 
