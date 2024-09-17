@@ -32,7 +32,7 @@ function ThemeSwitcher() {
     applyTheme(nextTheme);
   };
   return (
-    <button onClick={handleToggle}>
+    <button cursor-pointer onClick={handleToggle}>
       <ThemeIcon theme={currnetTheme}></ThemeIcon>
     </button>
   );
