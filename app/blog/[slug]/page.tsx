@@ -3,7 +3,7 @@ import { CustomMDX } from "app/components/mdx";
 import { formatDate, getBlogPosts } from "app/blog/utils";
 import { baseUrl } from "app/sitemap";
 
-export async function generateStaticParams() {
+async function generateStaticParams() {
   let posts = getBlogPosts();
 
   return posts.map((post) => ({
@@ -11,7 +11,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export function generateMetadata({ params }) {
+function generateMetadata({ params }) {
   let post = getBlogPosts().find((post) => post.slug === params.slug);
   if (!post) {
     return;
@@ -50,9 +50,7 @@ export function generateMetadata({ params }) {
     },
   };
 }
-export async function getViewsCount(): Promise<
-  { slug: string; count: number }[]
-> {
+async function getViewsCount(): Promise<{ slug: string; count: number }[]> {
   return [{ slug: "vim", count: 100 }];
 }
 

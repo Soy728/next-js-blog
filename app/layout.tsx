@@ -9,7 +9,7 @@ import Footer from "./components/footer";
 import { baseUrl } from "./sitemap";
 import { themeEffect } from "utils/themeEffect";
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
     default: "Next.js Portfolio Starter",
