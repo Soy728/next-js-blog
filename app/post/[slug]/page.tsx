@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { CustomMDX } from "app/components/mdx";
-import { formatDate, getBlogPosts } from "app/blog/utils";
+import { formatDate, getBlogPosts } from "app/post/utils";
 import { baseUrl } from "app/sitemap";
 
 import { Suspense } from "react";

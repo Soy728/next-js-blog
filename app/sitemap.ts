@@ -1,4 +1,4 @@
-import { getBlogPosts } from "app/blog/utils";
+import { getBlogPosts } from "app/post/utils";
 import { MetadataRoute } from "next";
 
 export const baseUrl = "https://portfolio-blog-starter.vercel.app";

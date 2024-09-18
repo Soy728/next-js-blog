@@ -1,36 +1,41 @@
-import Link from 'next/link'
-import { formatDate, getBlogPosts } from 'app/blog/utils'
+import Link from "next/link";
+import { formatDate, getBlogPosts } from "app/post/utils";
 
 export function BlogPosts() {
-  let allBlogs = getBlogPosts()
+  let allBlogs = getBlogPosts();
 
   return (
-    <div>
+    <div className="grid gap-4">
       {allBlogs
         .sort((a, b) => {
           if (
             new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt)
           ) {
-            return -1
+            return -1;
           }
-          return 1
+          return 1;
         })
         .map((post) => (
           <Link
             key={post.slug}
-            className="flex flex-col space-y-1 mb-4"
-            href={`/blog/${post.slug}`}
+            className="p-3 rounded-md hover:bg-gray-100/[.9] dark:hover:bg-gray-700/[.2]"
+            href={`/post/${post.slug}`}
           >
-            <div className="w-full flex flex-col md:flex-row space-x-0 md:space-x-2">
-              <p className="text-neutral-600 dark:text-neutral-400 w-[100px] tabular-nums">
-                {formatDate(post.metadata.publishedAt, false)}
-              </p>
-              <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
+            <div className="w-full grid gap-2">
+              <div className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
                 {post.metadata.title}
-              </p>
+              </div>
+
+              <div className="text-sm text-neutral-600 dark:text-neutral-100 tracking-tight">
+                {post.metadata.summary}
+              </div>
+
+              <div className="text-sm text-neutral-400 dark:text-neutral-400">
+                {formatDate(post.metadata.publishedAt, false)}
+              </div>
             </div>
           </Link>
         ))}
     </div>
-  )
+  );
 }

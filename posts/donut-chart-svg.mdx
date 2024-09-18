@@ -1,0 +1,235 @@
+---
+title: "SVG로 DonutChart 구현하기"
+publishedAt: "2024-05-26"
+summary: "SVG로 DonutChart 구현하기"
+---
+
+오늘은 SVG로 도넛차트를 만들어 본 경험을 공유하고자 합니다.
+어떤 태그를 사용해서 만들지에 대한 고민부터, SVG로 구현하는 방법까지 다뤄보고자 합니다! 아래는 완성된 컴포넌트입니다.
+
+---
+
+Chart를 개발 할 때, `Chart.js` 라이브러리를 주로 사용한다. [Chart.js ](https://www.chartjs.org/)라이브러리를 사용하면, 쉽고 간편하게 다양한 그래프를 그릴 수 있다.
+
+물론 라이브러리를 사용하면 간편하고 빠르게 개발을 할 수 있으나, 커스터마이징에 있어 제한이 있다.
+또, svg와 canvas를 공부하고 나면 라이브러리를 더 이해하고 잘 쓸 수 있을 것 같다는 생각이 들어, 라이브러리 없이 차트를 개발해보자 하였다.
+
+## Html, Canvas, Svg
+
+웹에 차트와 같은 그림을 그리는 태그는 크게 세 가지로 분류하고자 한다.
+
+```
+1. html (ex. div)
+2. svg
+3. canvas
+```
+
+1. html(ex. div) 태그는 돔에 접근하기 쉽고 익숙하다는 장점이 있다. 하지만 복잡한 그림은 div로만 그리는 것은 쉽지 않다.
+
+2. canvas는 비트맵이다. 픽셀 단위로 그림을 그린다. 붓에 물감을 발라 종이에 점을 찍고 선을 잇는 방식으로 그려진다. 따라서 그림이 그려지는것과 같은 애니메이션, 특히 고성능의 애니메이션을 표현하기에는 좋다. 하지만 픽셀 단위이기에, 화면 크기에 따라 해상도가 떨어진다. 또한 css로는 스타일링이 불가능하고 오로지 script로만 접근이 가능하다. 또한, 이벤트 핸들러에 대한 지원이 없다.
+
+3. svg는 벡터이다. 크기가 아무리 커져도 용량이 늘어지니 않는다. 연산을 통해 그림이 그려지며, 도형이 복잡해지면 계산 할 것이 많아지니 용량이 커지고 렌더링이 느려진다는 단점이 있다. 반면에, script 및 CSS를 통해서도 수정할 수 있고 이벤트 핸들러에 대해 지원이 가능하다.
+
+내가 그리고자 하는 도넛차트는 div로 표현하기에는 적합하지 않다. div는 모양이 간단하고 표현할 것이 많지 않은 Bar 차트 정도는 적합하다고 생각한다. (다만, 수십만개 이상의 Bar를 표현해야한다면 적합하진 않을 것 같다.)
+
+![출처: tcpschool](https://velog.velcdn.com/images/dev-soy/post/cd0658af-8bcc-41f4-a3b2-55afcf5fb135/image.png)
+
+tcpschool 사이트에 의하면 canvas는 화면이 작거나, 픽셀 수가 많은 경우에 적합하며 svg는 화면이 크거나 픽셀의 수가 적은 경우에 적합하다고 한다.
+
+추가로, 직접 성능을 측정한 [미디엄 글](https://idchoi2.medium.com/javascript-%EB%8F%84%ED%98%95-%EA%B7%B8%EB%A6%AC%EA%B8%B0-html-vs-svg-vs-canvas-%EC%84%B1%EB%8A%A5-%EB%B9%84%EA%B5%90-9e1ce2396fcd)을 통해 보면, 그려야 할 것이 많은 경우(복잡한 그림, 애니메이션 등) canvas가 압도적으로 빠르다고 한다.
+
+도넛 차트의 경우 그려야 할 요소가 그리 많진 않고 단순한 편이다. 또한, 필자가 개발하고자하는 도넛 차트는 다양한 스크린 사이즈에 대응해야 하고, 개별 element에 대한 이벤트(click, hover 등)도 대응이 되어야하기에 canvas보다는 `svg`가 적합하다고 판단하였다.
+
+## SVG로 도넛 차트 구현하기
+
+각의 호를 그려 도넛 차트를 표현하고자 한다. SVG의 PATH태그에서 호를 그리는 원리는 아래와 같다.
+
+호를 그리기 위해서는 시작좌표와 끝 좌표를 알아야 한다. 중학교 때 배웠던 삼각함수를 떠올려보자. (끄웅..,.^^;)
+
+```
+x좌표는 r(반지름)*cos(Θ)
+y좌표는 r(반지름)*sin(Θ)
+
+```
+
+x좌표와 y좌표는 위 방식으로 알 수 있다. 즉, 각 element의 양에 따른 각도를 구하면 좌표를 얻을 수 있다.
+element의 양을 전체 양(모든 요소를 합친 총량)으로 나눈 뒤에 360도를 곱하면 해당 요소의 각도를 알 수 있다.
+
+다만 각도를 radian으로 변경해야한다. radian을 구하는 방법은 아래와 같다.
+
+```
+Marh.PI * 2 * 각도
+```
+
+아래는 데이터 예시이다.
+
+```
+예시 데이터: [{ apple : 200, }, { banana: 300 }, { kiwi: 500 }]
+
+총량: 1000
+
+결과:
+[{ apple : {startAngle: {x: Math.cos(Marh.PI * 2 * 0), y: Math.sin(Marh.PI * 2 * 0) },
+			  endAngle: {x: Math.cos(Marh.PI * 2 * (200 / 1000)), y: Math.sin(Marh.PI * 2 * (200 / 1000)) }}},
+
+ { banana: {startAngle: {x: Math.cos(Marh.PI * 2 * (200 / 1000))), y: Math.sin(Marh.PI * 2 * 0) },
+ 			  endAngle: {x: Math.cos(Marh.PI * 2 * ((200 + 300) / 1000)))), y: Math.sin(Marh.PI * 2 * ((200 + 300) / 1000))) }}},
+  ...
+ ]
+```
+
+element의 시작 각도는 이전에 그렸던 요소의 각도 이후로 시작하여야 한다. 위 코드를 보면, banana의 시작 각도는 apple의 끝 각도이고, banana의 끝 각도는 apple의 값에 자신의 값을 더한 것을 볼 수 있다.
+
+원리는 이해하였으니 이제 그리기만 하면 된다.
+
+## D3.arc()
+
+svg로 호를 그릴때에 유용한 라이브러리인 [D3의 arc함수](https://d3js.org/d3-shape/arc) 사용하였다. SVG의 좌표를 직접 코드로 치는 것보다 라이브러리를 사용하는 것이 유지 보수에 좋을 것이라고 생각하였다.
+
+```
+//SVG path 좌표 예시. 직관적이진 않다 ㅜㅜ..
+
+<path d="
+	m 60 110
+      5 10
+      5 -5
+    h 5
+    v 10
+    l 10 15
+      5 -5
+    z
+"/>
+```
+
+arc함수의 인자로 필요한 것은 다음과 같다.
+`innerRadius`, `innerRadius`, `startAngle`, `endAngle`
+
+```
+d3.arc({
+  innerRadius: 0,
+  innerRadius: 100,
+  startAngle: 0,
+  endAngle: Math.PI / 2
+});
+```
+
+위 라이브러리를 사용해 구현해보았다.
+
+```
+<script lang="ts">
+
+function chartDraw( data: { paint: string; value: number; label: string }[]})
+		const total = _(dataSet.data).sumBy((d) => Number(d.value));
+
+		return {
+           //tooltip과 label에 해당 값을 찍어주기 위해 퍼센테이지 값을 추가하였다.
+			...{
+				...data,
+				data: data.map((d) => {
+					return { ...d, percent: Math.ceil((d.value / total) * 100) };
+				})
+			},
+            //좌표 구하기
+			d: data.map((d, i) => {
+				const preSumAmount = _(data.slice(0, i)).sumBy((v) => Number(v.value));
+				const nowSumAmount = preSumAmount + Number(d.value);
+				const startDeg = preSumAmount / total;
+				const endDeg = nowSumAmount / total;
+
+				return (
+					d3.arc()({
+						innerRadius: 3,
+						outerRadius: 2,
+						startAngle: startDeg * Math.PI * 2,
+						endAngle: endDeg * Math.PI * 2
+					})
+				);
+			})
+		};
+	}
+
+    </script>
+```
+
+## 좌표값 다루기
+
+svg로 그림을 그리기 전에, svg의 좌표 체계에 대해 알아야한다.
+
+svg는 좌측 상단을 기점으로 (0,0) 시작한다. 하지만 우리는 (0,0)이 중앙에 있어야 좌표를
+그리기 편하다.
+
+css의 `transform: translate(x, y)`를 사용하면 좌표값을 중앙으로 옮길 수 있다.
+그래프의 중앙값은 `rootWidth / 2` `rootHeight / 2` 이다.
+
+```
+	<div class="svg-container" bind:clientHeight={rootHeight} bind:clientWidth={rootWidth}>
+   	  <svg width="100%" height="100%">
+			<g transform={`translate(${rootWidth / 2} ${rootHeight / 2})`}>
+				{#each result?.data || [] as d, i}
+					<path class="svg-path"
+						d={result?.d?.[i]}
+						stroke-width={1}
+					/>
+				{/each}
+			</g>
+		</svg>
+    </div>
+```
+
+사실 이 방법보다, svg의 viewbox를 설정하는 것이 대중적인(?) 방법인 것 같다.
+svg의 viewbox를 설정하게 되면, 해당 svg 태그 내부에 있는 모든 요소 (도넛 차트 이외에 그릴 요소들)들을 뷰포트에 맞추어 좌표계산을 해야한다는게 단점인것 같다.
+
+## 반응형 스크린에 유연하게 대응하기
+
+위 코드를 보면 `svg-container` 의 가로, 세로 값을 지정하지 않고 `clientWidth`, `clientHeight` 값을 사용하고 있는 것을 볼 수 있다. 이는 반응형에 대응하기 위함이다. 그래프의 크기는 고정하지 않고, 그래프를 감싸고 있는 container의 크기에 대응하여 그래프의 크기가 결정된다.
+화면의 크기에 따라 그래프의 radius값도 달라져야 하므로 `chartDraw` 함수도 반응형에 대응하기 위한 코드를 추가하여야 한다.
+
+```
+<script lang="ts">
+
+function chartDraw(
+		dataSet: {
+			data: { paint: string; value: number; label: string }[];
+		},
+		width: number,
+		height: number
+	) {
+		const total = _(dataSet.data).sumBy((d) => Number(d.value));
+
+		return {
+			...{
+				...dataSet,
+				data: dataSet.data.map((d) => {
+					return { ...d, percent: Math.ceil((d.value / total) * 100) };
+				})
+			},
+			d: dataSet.data.map((d, i) => {
+				const preSumAmount = _(dataSet.data.slice(0, i)).sumBy((v) => Number(v.value));
+				const nowSumAmount = preSumAmount + Number(d.value);
+				const startDeg = preSumAmount / total;
+				const endDeg = nowSumAmount / total;
+
+				return (
+					d3.arc()({
+						innerRadius:
+							Math.min(width, height) / 3,
+						outerRadius:
+							Math.min(width, height) / 2,
+						startAngle: startDeg * Math.PI * 2,
+						endAngle: endDeg * Math.PI * 2
+					}) || ''
+				);
+			})
+		};
+	}
+
+</script>
+```
+
+그래프의 width와 height가 변경될 때마다 (= 화면의 크기가 달라질 때마다) 해당 함수를 호출하도록 코드를 짰다.
+화면의 크기가 변경 될 때마다 `chartDraw` 함수가 불리고, path의 d값이 달라질 것이다.
+
+이 방식으로 반응형에 대응한다면 chartDraw함수가 단순 크기 조정을 위해 많이 불린다.
+사이즈 대응만 하는 것인데 불필요한 연산을 행하니 말이다.
+
+chartDraw 함수에서 반복적인 연산이 필요없는 부분, 즉 startDeg, endDeg를 계산 하는 부분과 d3.arc()로 path를 만들어 내는 부분을 분리한 뒤에, 컴포넌트가 생성되었을 때에 한번 startDeg, endDeg를 계산하고, width랑 height가 변화하였을 때 d3.arc()로 path를 만들어내면 쓸모없는 연산은 줄일 수 있어보인다.

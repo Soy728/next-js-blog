@@ -1,0 +1,203 @@
+---
+title: "Recursive Navigation Component 구현하기"
+publishedAt: "2024-05-25"
+summary: "In the ever-evolving landscape of software development, the debate between dynamic and static typing continues to be a hot topic."
+---
+
+Recursive Navigation Component를 개발한 경험을 공유하고자 합니다.
+
+### Recursive Navigation Component
+
+---
+
+`디렉토리 / 파일` 구조를 나타낼 수 있는 컴포넌트를 만들고자 한다.
+
+구성할 목록을 미리 알고 있다면 depth가 얼마만큼 깊어질지 알고있으니, depth만큼 반복문을 작성하면 컴포넌트는 쉽게 구현이 가능하다.
+그러나, 구현하고자 하는 `Navigation Component` 는 데이터가 고정되어있지 않고 가변적이기에 depth를 미리 알 수 없었다.
+
+반복문이 얼마만큼 어디에 위치할지 모른기에 반복문만으로 문제를 해결하는 것은 불가능했다. 이에, `컴포넌트 재귀 호출 방식` 으로 문제를 해결 할 수 있지 않을까하는 생각을 하게 되었다.
+
+---
+
+우선 데이터부터 보자.
+
+API를 통해 받게되는 예시 데이터는 아래와 같다.
+`{[key in string]: string}` 타입으로, Obj안에 key는 파일의 경로, value는 해당 파일의 내용이 담겨있다.
+
+```
+ex) const inputData = {
+	'dir1/dir1-1/text.tx': 'Text 데이터가 들어있습니당',
+    'dir1/dir1-2/text.tx': 'Text 데이터가 들어있습니당',
+    'dir2/dir2-2/dir2-2-2/text.tx': 'Text 데이터가 들어있습니당',
+    }
+
+```
+
+## 트리 구조로 데이터 구현하기
+
+위 데이터로 네비게이션을 만들기 위해서는 **Tree구조**가 적합하다고 생각하였다. 내가 생각한 결과 데이터는 아래와 같다.
+`폴더 / 파일` 경로에 따라 상 하위 계층을 나누고, 하위 계층은 상위 계층의 **children**으로 분류된다. 더 이상 children이 없으면 그 파일이 마지막 경로 임을 의미한다.
+
+```
+const dataObj: DirectoryTreeUnit = {
+	dir1: {path: 'dir1',
+    	   children: {
+           				dir1-1: {path: 'dir1/dir1-1', children: {
+                        											dir1-1-1: {path: 'dir1/dir1-1/text.tx', children: {}}},
+    dir2: {...},
+    dir3: {...},
+    text.tx: {path: 'text.tx', children: {}}
+ }
+
+interface DirectoryTreeUnit {
+	path: string;
+	children: { [key in string]: DirectoryTreeUnit };
+}
+```
+
+API를 통해 받은 raw한 `inputData` 를 결과 데이터인`dataObj` 로 만들기 위해 아래 함수를 만들어 사용하였다.
+
+```
+<script lang="ts">
+
+function makeTrees(data: { [key in string]: string }) {
+		let obj: { [key in string]: DirectoryTreeUnit } = {};
+
+		Object.keys(data).map((key) => {
+			let result = obj;
+			const split = key.split('/');
+
+			for (let i = 0; i < split.length; i++) {
+				const pathName = split.slice(0, i + 1).join('/');
+
+				!result[split[i]] && (result[split[i]] = { path: pathName, children: {} });
+				result = result[split[i]].children;
+			}
+		});
+		return obj;
+	}
+
+    </script>
+
+```
+
+함수를 설명하면 다음과 같다.
+
+1. 빈 Object를 하나 선언한다. 이 obj는 Tree 데이터가 될 것이다.
+2. inputData를 순회한다. 여기서 중요한게 **result 변수**를 하나 선언하여 obj의 reference를 가르키게 한다. (result 변수가 필요한 이유는 6번에 나온다.)
+3. path (ex.`dir2/dir2-2/dir2-2-2/text.tx` )를 `/` 단위로 split한다.
+4. split한 문자열의 배열을 순회한다.
+5. 해당 문자열이 obj에 존재하지 않으면 문자열을 넣어준다. 해당 문자열이 obj에 존재한다면 이미 존재하는 폴더 이므로 건너뛴다.
+6. `result = result[split[i]].children` : **result 변수가 해당 문자열이 key인 object의 children을 보게 한다**.
+   6-1 ) **children이 있다면 result는 children object를 보고 있으므로 children을 Root로하여 for 문을 돌게 된다.**
+   6-2 ) 만약 children이 없으면 split 배열이 끝났으므로 for문을 더이상 돌지 않는다.
+
+위 로직에서 핵심은 6번. result 변수를 통해 순회하는 Object의 entry를 변경해주는 것이다. Javascript의 Object는 **Reference Type**이다.
+
+```
+const obj1 = {};
+const obj2 = obj1;
+```
+
+`obj2 = obj1` 의 의미는 obj2가 obj1을 주솟값을 참조하고 있는 것이다.
+(논외. obj2에 obj1의 값만 주고 싶다면, 깊은 복사를 해주어야 한다. 예를 들어, `obj2 = {...obj1}` 혹은 `obj2 = \_.deepClone(obj1)` 혹은 object assign을 활용해보자.)
+
+즉, **result의 reference를 object에서 하위 object로 entry를 계속 변경해주며 children을 모두 탐색**할 수 있게 하는 것이다.
+
+맨 처음 로직을 짤 때는 위 방식처럼 result 변수를 선언하지 않고, if문을 사용해서 부모 요소가 obj안에 존재하는지를 판단하고.. 뭐 이런 조건문을 거쳤는데 코드가 복잡해지고 시간이 좀 지나니까 나도 알아보기가 힘들었다.🥲😹
+
+위 방식처럼 result 변수를 이용해 탐색하는 루트를 변경해주면, 더욱 간결하게 코드를 짤 수 있다!
+
+데이터 만들기는 끝! 이제 컴포넌트를 만들어보자.
+
+---
+
+## Recursive Component란?
+
+컴포넌트 내부에서 자기 자신을 호출하는 방식.
+재귀 호출이 무한히 반복되지 않도록 탈출 조건만 잘 설정해주면 된다.
+
+## Recursive Navigation Component 구현하기
+
+다음은 Tree 구조의 데이터를 기반으로 Recursive한 트리 컴포넌트를 구현하는 방법이다.
+
+Tree 구조에서 가장 마지막에 있는 노드는 자신의 children이 존재 하지 않는다.
+즉, children이 있으면 `Recursive` 하게 반복하면 되고, children이 없으면 끝내면 된다.
+
+규칙은 아래와 같다.
+
+```
+해당 obj에 children이 있으면 children을 props를 넘겨주며 자기 자신을 재호출한다.
+children이 없으면 끝으로 간주한다.
+```
+
+children이 비어 있지 않은것이 폴더 일 것이고, children이 비어 있는것 가장 마지막인 파일일 것이다.
+~~_ (비어있는 폴더의 경우에는 폴더로 끝날수도 있겠으나, 필자는 해당 경우는 제외하였다. 만약 빈폴더를 허용한다면, path string으로(dir, text.tx)타입을 판단하여 마지막인지 아닌지를 결정하면 된다.)_~~
+
+```
+<!--Tree 컴포넌트를 간단하게 표현해 보았습니다-->
+
+ <!--parent-->
+ <Folder {name}/>
+
+    <!--children-->
+ 	{#if expanded}
+    	{#each datas as data}
+	   		{#if data.children}
+            	<!--children이 있는 경우 자기 자신을 재귀 호출-->
+         		<Tree name={data.name} datas={data.children}/>
+      		 {:else}
+                <!--children이 없는 경우 여기서 끝-->
+           		<File name={data.name}/>
+      		 {/if}
+    	{/each}
+  	{/if}
+```
+
+위 코드를 구현하기 위해 구글링을 하던중 Svelte에는 컴포넌트가 **재귀적으로 자신을 포함 할 수 있는 element**가 있다는 것을 알게 되었다.
+
+## svelte:self
+
+공식 문서의 설명을 읽어보면 if문이나 each문 안에서 사용하거나 slot을 넘겨주라고 되어있다. 무한히 반복되지 않도록 탈출 조건을 잘 설정하여야 한다.
+
+아래는 `svelte:self` element를 활용해서 컴포넌트를 구성한 코드이다. 코드 이해에 있어 불필요한 부분(스타일링)은 제외하였다.
+
+```
+<script lang="ts">
+	export let datas: DirectoryTreeUnit | {};
+	export let name: string;
+	export let expanded = false;
+
+	function clickedDirectory() {
+		expanded = !expanded;
+	}
+</script>
+
+<div class="root">
+    <Folder onClick={clickedDirectory} folderName={name}/>
+
+	{#if expanded}
+		<ul>
+			{#each Object.entries(datas) as [fileName, item]}
+				<li>
+					{#if !_.isEmpty(item?.children)}
+						<svelte:self name={fileName} datas={item.children} />
+                        <!--svelte가 아니라면, 자기 자신 컴포넌트를 호출해주면 된다.-->
+                        <!--<Tree name={fileName} datas={item.children} />-->
+					{:else}
+                        <File {fileName}/>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</div>
+```
+
+## 정리
+
+완성된 컴포넌트이다. 필자는 Recursive Navigation 컴포넌트에서 하나의 파일을 누르면 파일의 path를 상위로 전달한 뒤에, 상위 컴포넌트에서 해당 path에 있는 파일을 오른쪽 화면에 그렸다. 파일 자체를 포함해 데이터를 만들어 컴포넌트에 넣어도 되지만 혹시모를 확장성 때문에 분리하는게 나을 것 같다고 판단하였다.
+
+여러가지 컴포넌트를 만들어 보았지만, 컴포넌트가 자기 자신을 호출하는 컴포넌트는 처음 만들어보고 이런 것도 있구나를 알게 되었다. 특히 svelte:self.. 공식문서 읽으면서 절대 절대 눈여겨 보지 않아서 몰랐던 element인데 .. ㅎㅎ..
+또, Reference 참조를 변경해서 데이터 순회하는 방식은 참 유용한 것 같다. if문 남발하지 않고 간결하게 코드를 짤 수 있는것 같아서 잘 인지하고 있다가 이곳저곳 적합한 곳에 써야겠다.
+참 재밌었던 작업이었다. 끗-!
