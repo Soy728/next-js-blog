@@ -5,6 +5,7 @@ import { baseUrl } from "app/sitemap";
 
 import { Suspense } from "react";
 import ViewCount from "app/components/view-count";
+import Comments from "app/components/comments";
 
 async function generateStaticParams() {
   let posts = getBlogPosts();
@@ -99,6 +100,8 @@ export default async function Blog({ params }) {
       <article className="prose">
         <CustomMDX source={post.content} />
       </article>
+
+      <Comments />
     </section>
   );
 }
