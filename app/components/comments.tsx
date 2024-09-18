@@ -18,8 +18,8 @@ function Comments() {
     script.src = "https://utteranc.es/client.js";
     script.async = true;
     script.setAttribute("repo", "Soy728/blog-comments");
-    script.setAttribute("issue-term", "title");
-    script.setAttribute("label", "comment");
+    script.setAttribute("issue-term", "pathname");
+    script.setAttribute("label", "comments");
     script.setAttribute("theme", `github-light`);
     script.setAttribute("crossorigin", "anonymous");
     container.appendChild(script);
