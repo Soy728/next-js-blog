@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { formatDate, getBlogPosts } from "app/post/utils";
+import { formatDate } from "app/post/utils";
 
-export function BlogPosts() {
-  let allBlogs = getBlogPosts();
-
+export function BlogPosts({ posts }) {
   return (
     <div className="grid gap-4">
-      {allBlogs
+      {posts
         .sort((a, b) => {
           if (
             new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt)
