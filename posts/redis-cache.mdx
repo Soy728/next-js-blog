@@ -20,18 +20,21 @@ summary: 'BFF(Backend for Frontend)와 서버 캐싱을 활용한 성능 최적�
 2.  **비즈니스 로직의 복잡성 증가**: 여러 데이터들을 조합해야 하는 경우, 클라이언트 코드에서 비즈니스 로직이 섞이게 되어 유지보수가 어려워집니다.
 
 3.  **서버 부담 증가**: 동일한 요청이 반복적으로 발생하면 서버 리소스를 낭비하게 됩니다.
-    이를 해결하기 위해 BFF(Backend for Frontend) 계층을 추가하여 API 요청을 중앙에서 처리하도록 설계하는 방향을 떠올리게 되었습니다.
-    추가적인 최적화로 서버 캐싱을 적용하여 네트워크 지연 문제를 해결하고자 하였습니다.
+
+이를 해결하기 위해 BFF(Backend for Frontend) 계층을 추가하여 API 요청을 중앙에서 처리하도록 설계하는 방향을 떠올리게 되었습니다.
+추가적인 최적화로 서버 캐싱을 적용하여 네트워크 지연 문제를 해결하고자 하였습니다.
 
 <br />
 
 ```
-import express from 'express'; const app = express();
+import express from 'express';
+
+const app = express();
 
 app.get('/providers', async (req, res) => {
 
 const resp = await generateProviders(req)
-res.send({ data: resp });
+    res.send({ data: resp });
 });
 
 app.get('/providers/:addr', async (req, res) => {
