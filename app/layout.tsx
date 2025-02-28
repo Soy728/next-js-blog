@@ -62,7 +62,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css'
 				/>
 			</head>
-			{/* <meta name='google-site-verification' content='gVVh5k-72djAGr7x6lgDtK8B5SkAePsEK2btjYMki7Q' /> */}
 			<body className='antialiased max-w-3xl mx-4 mt-8 lg:mx-auto'>
 				<main className='flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0'>
 					<Navbar />
