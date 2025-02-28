@@ -33,17 +33,17 @@ export function generateMetadata({ params }) {
 			type: 'article',
 			publishedTime,
 			url: `${baseUrl}/post/${post.slug}`,
-			images: [
-				{
-					url: ogImage,
-				},
-			],
+			// images: [
+			// 	{
+			// 		url: ogImage,
+			// 	},
+			// ],
 		},
 		twitter: {
 			card: 'summary_large_image',
 			title,
 			description,
-			images: [ogImage],
+			// images: [ogImage],
 		},
 	};
 }
@@ -68,7 +68,7 @@ export default async function Blog({ params }) {
 						datePublished: post.metadata.publishedAt,
 						dateModified: post.metadata.publishedAt,
 						description: post.metadata.summary,
-						image: `https://soy728-blog.vercel.app/api/og-image?slug=${params.slug}`,
+						// image: `https://soy728-blog.vercel.app/api/og-image?slug=${params.slug}`,
 						url: `${baseUrl}/blog/${post.slug}`,
 						author: {
 							'@type': 'Person',
