@@ -15,7 +15,12 @@ export const metadata: Metadata = {
 		default: 'Soy Blog',
 		template: '%s | Soy Blog',
 	},
-	verification: { google: 'gVVh5k-72djAGr7x6lgDtK8B5SkAePsEK2btjYMki7Q' },
+	verification: {
+		google: 'gVVh5k-72djAGr7x6lgDtK8B5SkAePsEK2btjYMki7Q',
+		other: {
+			'naver-site-verification': 'ff7f0fbb548d7cbd85abf84d3c8d162ea856348e',
+		},
+	},
 	description: 'Web Frontend',
 	openGraph: {
 		title: 'Soy Blog',
