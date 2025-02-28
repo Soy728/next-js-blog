@@ -22,7 +22,6 @@ export function generateMetadata({ params }) {
 	}
 
 	let { title, publishedAt: publishedTime, summary: description, image } = post.metadata;
-	let ogImage = image ? image : `${baseUrl}/og?title=${encodeURIComponent(title)}`;
 
 	return {
 		title,
@@ -35,7 +34,7 @@ export function generateMetadata({ params }) {
 			url: `${baseUrl}/blog/${post.slug}`,
 			images: [
 				{
-					url: ogImage,
+					url: '/asset/og-default.jpg',
 				},
 			],
 		},
@@ -43,7 +42,7 @@ export function generateMetadata({ params }) {
 			card: 'summary_large_image',
 			title,
 			description,
-			images: [ogImage],
+			images: ['/asset/og-default.jpg'],
 		},
 	};
 }
@@ -68,9 +67,7 @@ export default async function Blog({ params }) {
 						datePublished: post.metadata.publishedAt,
 						dateModified: post.metadata.publishedAt,
 						description: post.metadata.summary,
-						image: post.metadata.image
-							? `${baseUrl}${post.metadata.image}`
-							: `/og?title=${encodeURIComponent(post.metadata.title)}`,
+						image: '/asset/og-default.jpg',
 						url: `${baseUrl}/blog/${post.slug}`,
 						author: {
 							'@type': 'Person',
