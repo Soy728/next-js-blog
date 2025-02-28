@@ -15,7 +15,7 @@ async function generateStaticParams() {
 	}));
 }
 
-function generateMetadata({ params }) {
+export function generateMetadata({ params }) {
 	let post = getBlogPosts().find((post) => post.slug === params.slug);
 	if (!post) {
 		return;
