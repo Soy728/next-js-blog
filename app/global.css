@@ -67,7 +67,7 @@ html {
 }
 
 .prose .anchor:after {
-	@apply text-neutral-300 dark:text-neutral-700;
+	@apply text-neutral-300 dark:text-neutral-800;
 	content: '#';
 }
 
@@ -102,23 +102,23 @@ html {
 }
 
 .prose h1 {
-	@apply text-4xl font-medium tracking-tight mt-6 mb-2;
+	@apply text-4xl font-bold tracking-tight mt-6 mb-2;
 }
 
 .prose h2 {
-	@apply text-xl font-medium tracking-tight mt-6 mb-2;
+	@apply text-2xl font-bold tracking-tight mt-6 mb-2;
 }
 
 .prose h3 {
-	@apply text-xl font-medium tracking-tight mt-6 mb-2;
+	@apply text-xl font-bold tracking-tight mt-6 mb-2;
 }
 
 .prose h4 {
-	@apply text-lg font-medium tracking-tight mt-6 mb-2;
+	@apply text-lg font-bold tracking-tight mt-6 mb-2;
 }
 
 .prose strong {
-	@apply font-medium;
+	@apply font-bold;
 }
 
 .prose ul {

@@ -1,19 +1,28 @@
 ---
-title: "SVG로 RadarChart 구현하기"
-publishedAt: "2024-05-27"
-summary: "SVG로 RadarChart 구현하기"
+title: 'SVG로 RadarChart 구현하기'
+publishedAt: '2024-05-27'
+summary: 'SVG로 RadarChart 구현하기'
 ---
 
-SVG로 Radar차트를 개발한 경험을 공유해보고자 합니다!
+최근 회사의 시각화 프로젝트에서 여러 차트를 개발하였습니다. 그 중에서도 Rader 차트는 라이브러리 없이 SVG로 개발하였는데요!
+이번 포스팅에서는 SVG로 Radar차트를 개발한 경험을 공유해보고자 합니다!
 
-> **Chart.js** 공식 문서
-> A radar chart is a way of showing multiple data points and the variation between them.
-> They are often useful for comparing the points of two or more different data sets.
+---
+
+![Example Image](/asset/radar-chart.gif)
 
 ## Radar Chart
 
 Radar Chart는 3개 이상의 데이터를 각 축별로 비교할 때 사용하면 좋은 그래프이다.
-비교하고 싶은 축의 개수(n)에 맞게 다각형이 결정된다. 예를들어, 비교하고 싶은 축이 3개라면 삼각형의 차트가, 6개라면 육각형의 차트가 생성된다. 단 3개 이상의 축이 존재하여야 도형이 만들어진다는 점만 알아두자.
+
+**Chart.js** 공식 문서: Radar Chart
+
+```
+A radar chart is a way of showing multiple data points and the variation between them.
+They are often useful for comparing the points of two or more different data sets.
+```
+
+비교하고 싶은 축의 개수(n)에 맞게 다각형이 결정된다. 예를들어, 비교하고 싶은 축이 3개라면 삼각형의 차트가, 6개라면 육각형의 차트가 생성된다.
 
 Radar Chart를 만드는 방법은 간단하다. **각도**계산과 각도를 기반으로한 **x,y 좌표**만 알면 된다.
 
@@ -38,7 +47,7 @@ points를 구해보자.
 
 
 function getPolygonCoordinate(data: number[], radius: number) {
-        // label은 여러개의 축들을 의미한다. ex. ['sweet', 'price', 'color', 'fresh', 'good']
+        // label은 여러개의 축들을 의미한다.
         // 축을 기준으로 다각형을 그릴 것이므로 각 data가 차지하는 angle은 360 / labels.length 이다.
 		const _angle = 360 / labels.length;
 		const _data = labels.map((d, i) => data[i] || 0);
@@ -64,7 +73,7 @@ function getPolygonCoordinate(data: number[], radius: number) {
 
 ...
 
-<!--svelte에서는 #each가 반복문을 표현하는 방식이다. map을 의미한다고 생각하면 된다.-->
+
 {#each datasets as set, index}
     <!--svelte에서는 @const를 사용하면 해당 스코프에서만 local하게 사용할 변수라는 것을 의미한다.-->
 	{@const polygon = getPolygonCoordinate(set?.data, radius)}
@@ -85,8 +94,13 @@ function getPolygonCoordinate(data: number[], radius: number) {
 
 각 축의 값은 반지름의 높이로 값을 주었다. 예를들어, apple은 price(축)가 만점이라고 가정하였을때, 즉 `_maxRange` 와 같은 값일때 `	const h = (d / _maxRange) * radius` 에서 h 값이 `1 * radius` 가 나와서 가장 큰 값을 가지게된다.
 
-> **깨알🫘 태그 지식 ** > `<g/>태그` 는 svg 태그 요소들을 그룹하하는데 사용한다.
-> `<g/>태그` 로 묶어 하위 요소들에게 스타일링을 일괄적으로 주는 게 가능하다. 공통적인 묶음이 되는 요소들은 `<g/>태그` 로 묶어주는게 좋다.
+**깨알🫘 태그 지식**
+
+```
+<g/>태그는 svg 태그 요소들을 그룹하하는데 사용한다.
+<g/>태그로 묶어 하위 요소들에게 스타일링을 일괄적으로 주는 게 가능하다.
+공통적인 묶음이 되는 요소들은 `<g/>태그` 로 묶어주는게 좋다.
+```
 
 맨처음에 \_maxRange는 props로 export해서 사용하였다. 하지만 datasets에 \_maxRange보다 큰 값이 들어온다면 범위를 초과하여 그래프가 그려진다.
 
@@ -177,13 +191,13 @@ radialGradient은 css의 태그중 `radial-gradient`와 유사해보이지만, s
 ```
 <svg>
   <defs>
-    <radialGradient id="radialG-1" cx="50%" cy="50%" r="50%" fx="20%" fy="20%"> 
-      <stop offset="0%" stop-color="#ffc054" /> 
-      <stop offset="100%" stop-color="#ff614b" /> 
+    <radialGradient id="radialG-1" cx="50%" cy="50%" r="50%" fx="20%" fy="20%">
+      <stop offset="0%" stop-color="#ffc054" />
+      <stop offset="100%" stop-color="#ff614b" />
     </radialGradient>
   </defs>
 
-  <rect  
+  <rect
     fill="url(#radialG-1)"
     x="0" y="0"
     width="100" height="100" />
@@ -196,6 +210,3 @@ radialGradient 태그는 id값을 부여한 뒤에 사용하고 싶은 태그에
 
 `radialGradient`과 같은 디자인적인? 태그들은 `defs` 태그 내부에 써주는게 좋다.
 `defs` 요소 내에 선언된 그래픽은 바로 렌더링 되지 않는다. `defs`를 나중에 사용될 그래픽 객체를 저장하는 용도이며, 참조될 요소로 간주되기에 문서의 전반적인 접근에 유리하다고 한다.
-
-Tada-! 예쁜 레이터 차트 완성이다. 그리는거 너무 재밌다.. 재미져..
-예쁘게 컴포넌트가 나와서 기분이 참 좋다 .. ^ ^~

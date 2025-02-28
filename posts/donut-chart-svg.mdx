@@ -1,7 +1,7 @@
 ---
-title: "SVG로 DonutChart 구현하기"
-publishedAt: "2024-05-26"
-summary: "SVG로 DonutChart 구현하기"
+title: 'SVG로 DonutChart 구현하기'
+publishedAt: '2024-05-26'
+summary: 'SVG로 DonutChart 구현하기'
 ---
 
 오늘은 SVG로 도넛차트를 만들어 본 경험을 공유하고자 합니다.
@@ -44,7 +44,19 @@ tcpschool 사이트에 의하면 canvas는 화면이 작거나, 픽셀 수가 �
 
 각의 호를 그려 도넛 차트를 표현하고자 한다. SVG의 PATH태그에서 호를 그리는 원리는 아래와 같다.
 
-호를 그리기 위해서는 시작좌표와 끝 좌표를 알아야 한다. 중학교 때 배웠던 삼각함수를 떠올려보자. (끄웅..,.^^;)
+<img
+	src='https://velog.velcdn.com/images/dev-soy/post/8b4b38e7-a376-42b6-8588-cbd8596e9126/image.png'
+	width='600'
+	height='300'
+/>
+
+호를 그리기 위해서는 시작좌표와 끝 좌표를 알아야 한다. 중학교 때 배웠던 삼각함수를 떠올려보자.
+
+<img
+	src='https://velog.velcdn.com/images/dev-soy/post/43379e2f-5010-4d43-869f-623437829e36/image.jpeg'
+	width='600'
+	height='300'
+/>
 
 ```
 x좌표는 r(반지름)*cos(Θ)
@@ -58,24 +70,27 @@ element의 양을 전체 양(모든 요소를 합친 총량)으로 나눈 뒤에
 다만 각도를 radian으로 변경해야한다. radian을 구하는 방법은 아래와 같다.
 
 ```
-Marh.PI * 2 * 각도
+Marh.PI _ 2 _ 각도
+
 ```
 
 아래는 데이터 예시이다.
 
 ```
+
 예시 데이터: [{ apple : 200, }, { banana: 300 }, { kiwi: 500 }]
 
 총량: 1000
 
 결과:
-[{ apple : {startAngle: {x: Math.cos(Marh.PI * 2 * 0), y: Math.sin(Marh.PI * 2 * 0) },
-			  endAngle: {x: Math.cos(Marh.PI * 2 * (200 / 1000)), y: Math.sin(Marh.PI * 2 * (200 / 1000)) }}},
+[{ apple : {startAngle: {x: Math.cos(Marh.PI _ 2 _ 0), y: Math.sin(Marh.PI _ 2 _ 0) },
+endAngle: {x: Math.cos(Marh.PI _ 2 _ (200 / 1000)), y: Math.sin(Marh.PI _ 2 _ (200 / 1000)) }}},
 
- { banana: {startAngle: {x: Math.cos(Marh.PI * 2 * (200 / 1000))), y: Math.sin(Marh.PI * 2 * 0) },
- 			  endAngle: {x: Math.cos(Marh.PI * 2 * ((200 + 300) / 1000)))), y: Math.sin(Marh.PI * 2 * ((200 + 300) / 1000))) }}},
-  ...
- ]
+{ banana: {startAngle: {x: Math.cos(Marh.PI _ 2 _ (200 / 1000))), y: Math.sin(Marh.PI _ 2 _ 0) },
+endAngle: {x: Math.cos(Marh.PI _ 2 _ ((200 + 300) / 1000)))), y: Math.sin(Marh.PI _ 2 _ ((200 + 300) / 1000))) }}},
+...
+]
+
 ```
 
 element의 시작 각도는 이전에 그렸던 요소의 각도 이후로 시작하여야 한다. 위 코드를 보면, banana의 시작 각도는 apple의 끝 각도이고, banana의 끝 각도는 apple의 값에 자신의 값을 더한 것을 볼 수 있다.
@@ -87,9 +102,11 @@ element의 시작 각도는 이전에 그렸던 요소의 각도 이후로 시�
 svg로 호를 그릴때에 유용한 라이브러리인 [D3의 arc함수](https://d3js.org/d3-shape/arc) 사용하였다. SVG의 좌표를 직접 코드로 치는 것보다 라이브러리를 사용하는 것이 유지 보수에 좋을 것이라고 생각하였다.
 
 ```
+
 //SVG path 좌표 예시. 직관적이진 않다 ㅜㅜ..
 
-<path d="
+<path
+	d='
 	m 60 110
       5 10
       5 -5
@@ -98,7 +115,8 @@ svg로 호를 그릴때에 유용한 라이브러리인 [D3의 arc함수](https:
     l 10 15
       5 -5
     z
-"/>
+'
+/>
 ```
 
 arc함수의 인자로 필요한 것은 다음과 같다.
