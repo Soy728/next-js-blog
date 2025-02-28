@@ -22,8 +22,8 @@ export function generateMetadata({ params }) {
 	}
 
 	let { title, publishedAt: publishedTime, summary: description, image } = post.metadata;
-	let ogImage = image ? image : `${baseUrl}/og?title=${encodeURIComponent(title)}`;
-	const imageUrl = `https://soy728-blog.vercel.app/api/og-image?slug=${params.slug}`;
+	// let ogImage = image ? image : `${baseUrl}/og?title=${encodeURIComponent(title)}`;
+	const ogImage = `https://soy728-blog.vercel.app/api/og-image?slug=${params.slug}`;
 	return {
 		title,
 		description,
@@ -35,7 +35,7 @@ export function generateMetadata({ params }) {
 			url: `${baseUrl}/post/${post.slug}`,
 			images: [
 				{
-					url: imageUrl,
+					url: ogImage,
 				},
 			],
 		},
@@ -43,7 +43,7 @@ export function generateMetadata({ params }) {
 			card: 'summary_large_image',
 			title,
 			description,
-			images: [imageUrl],
+			images: [ogImage],
 		},
 	};
 }
@@ -68,7 +68,7 @@ export default async function Blog({ params }) {
 						datePublished: post.metadata.publishedAt,
 						dateModified: post.metadata.publishedAt,
 						description: post.metadata.summary,
-						image: '<generated>',
+						image: `https://soy728-blog.vercel.app/api/og-image?slug=${params.slug}`,
 						url: `${baseUrl}/blog/${post.slug}`,
 						author: {
 							'@type': 'Person',
