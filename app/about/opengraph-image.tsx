@@ -12,8 +12,6 @@ export const contentType = 'image/png';
 
 // Image generation
 export default async function Image() {
-	const interSemiBold = await readFile(join(process.cwd(), 'assets/Inter-SemiBold.ttf'));
-
 	return new ImageResponse(
 		(
 			<div
@@ -25,20 +23,11 @@ export default async function Image() {
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
-				}}>
-				About Acme
-			</div>
+				}}
+			/>
 		),
 		{
 			...size,
-			fonts: [
-				{
-					name: 'Inter',
-					data: interSemiBold,
-					style: 'normal',
-					weight: 400,
-				},
-			],
 		}
 	);
 }
